@@ -38,16 +38,12 @@ wss.on('connection', function(socket)
     soc.onmessage = onmessage_proxy;
 
     // Unset waiting socket (and free the connection id)
-    delete soc.id;
     delete wss.sockets[id];
   }
 
   // There was not a websocket waiting for this path-id, put it to wait itself
   else
-  {
-    socket.id = id;
     wss.sockets[id] = socket;
-  }
 
 
   // Peer connection is closed, close the other end
@@ -59,6 +55,6 @@ wss.on('connection', function(socket)
 
     // Socket was not connected, remove it from sockets list
     else
-      delete wss.sockets[socket.id];
+      delete wss.sockets[id];
   };
 });
