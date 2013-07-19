@@ -1,5 +1,5 @@
 {
-  "name": "Schuko",
+  "name": "schuko",
   "version": "1.0.1",
   "description": "WebSockets extension cord",
   "dependencies": {
