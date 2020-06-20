@@ -6,26 +6,28 @@
  * MIT Licensed
  */
 
-var WebSocketServer = require('ws').Server;
-var wss = new WebSocketServer({port: 8080});
+const {Server} = require('ws');
 
-//Dict to store connections
+
+const wss = new Server({port: 8080});
+
+// Dict to store connections
 wss.sockets = {};
 
 wss.on('connection', function(socket)
 {
   // Forward raw message to the other peer
-  function onmessage_proxy(message)
+  function onmessage_proxy({data})
   {
-    this.peer.send(message.data);
+    this.peer.send(data);
   };
 
 
   // Get path-id of the 'extension cord'
-  var id = socket.upgradeReq.url;
+  const id = socket.upgradeReq.url;
 
   // Look if there was a websocket waiting with this path-id
-  var soc = wss.sockets[id];
+  const soc = wss.sockets[id];
 
   // There was a websocket waiting for this path-id, interconnect them
   if(soc)
