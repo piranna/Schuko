@@ -7,6 +7,13 @@
 const {Server} = require('ws');
 
 
+// Forward raw message to the other peer
+function onmessage_relay({data})
+{
+  this.peer.send(data);
+};
+
+
 module.exports = function(config)
 {
   const wss = new Server(config);
@@ -16,13 +23,6 @@ module.exports = function(config)
 
   wss.on('connection', function(socket)
   {
-    // Forward raw message to the other peer
-    function onmessage_proxy({data})
-    {
-      this.peer.send(data);
-    };
-
-
     // Get path-id of the 'extension cord'
     const id = socket.upgradeReq.url;
 
@@ -36,8 +36,8 @@ module.exports = function(config)
       socket.peer = soc;
       soc.peer = socket;
 
-      socket.onmessage = onmessage_proxy;
-      soc.onmessage = onmessage_proxy;
+      socket.onmessage = onmessage_relay;
+      soc.onmessage = onmessage_relay;
 
       // Unset waiting socket (and free the connection id)
       delete sockets[id];
