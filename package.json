@@ -4,5 +4,17 @@
   "description": "WebSockets extension cord",
   "dependencies": {
     "ws": "latest"
-  }
+  },
+  "main": "index.js",
+  "bin": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/piranna/Schuko.git"
+  },
+  "author": "Jesús Leganés-Combarro 'piranna' <piranna@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/piranna/Schuko/issues"
+  },
+  "homepage": "https://github.com/piranna/Schuko#readme"
 }
