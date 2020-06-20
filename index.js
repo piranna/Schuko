@@ -21,15 +21,12 @@ module.exports = function(config)
   // Dict to store connections
   const sockets = {};
 
-  wss.on('connection', function(socket)
+  wss.on('connection', function(socket, {url})
   {
-    // Get path-id of the 'extension cord'
-    const id = socket.upgradeReq.url;
+    // Look if there was a websocket waiting with this url
+    const soc = sockets[url];
 
-    // Look if there was a websocket waiting with this path-id
-    const soc = sockets[id];
-
-    // There was a websocket waiting for this path-id, interconnect them
+    // There was a websocket waiting for this url, interconnect them
     if(soc)
     {
       // Link peers and set onmessage event to just forward between them
@@ -39,13 +36,13 @@ module.exports = function(config)
       socket.onmessage = onmessage_relay;
       soc.onmessage = onmessage_relay;
 
-      // Unset waiting socket (and free the connection id)
-      delete sockets[id];
+      // Unset waiting socket (and free the connection url)
+      delete sockets[url];
     }
 
-    // There was not a websocket waiting for this path-id, put it to wait itself
+    // There was not a websocket waiting for this url, put it to wait itself
     else
-      sockets[id] = socket;
+      sockets[url] = socket;
 
 
     // Peer connection is closed, close the other end
@@ -57,7 +54,7 @@ module.exports = function(config)
 
       // Socket was not connected, remove it from sockets list
       else
-        delete sockets[id];
+        delete sockets[url];
     };
   });
 

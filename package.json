@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "description": "WebSockets extension cord",
   "dependencies": {
-    "ws": "latest"
+    "ws": "7.3.0"
   },
   "main": "index.js",
   "bin": "server.js",
