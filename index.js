@@ -22,6 +22,18 @@ module.exports = function(config)
   // Dict to store connections
   const sockets = {};
 
+  // Peer connection is closed, close the other end
+  function onclose()
+  {
+    // Sockets were connected, just close them
+    if(this.peer != null)
+      this.peer.close();
+
+    // Socket was not connected, remove it from sockets list
+    else
+      delete sockets[url];
+  }
+
   return function(req, socket, head)
   {
     // Get url of the 'extension cord'
@@ -56,17 +68,8 @@ module.exports = function(config)
       else
         sockets[url] = socket;
 
-        // Peer connection is closed, close the other end
-      socket.onclose = function()
-      {
-        // Sockets were connected, just close them
-        if(socket.peer != undefined)
-          socket.peer.close();
-
-        // Socket was not connected, remove it from sockets list
-        else
-          delete sockets[url];
-      };
+      // Peer connection is closed, close the other end
+      socket.onclose = onclose;
     });
   }
 }
