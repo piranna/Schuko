@@ -6,7 +6,14 @@
  * MIT Licensed
  */
 
+const { createServer } = require('http');
+
 const schuko = require('.');
 
 
-schuko({port: 8080});
+createServer(function(req, res)
+{
+  res.writeHead(426).end();
+})
+.on('upgrade', schuko())
+.listen(8080);
