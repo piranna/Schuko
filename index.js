@@ -15,9 +15,9 @@ function onmessage_relay({data})
 };
 
 
-module.exports = function(config)
+module.exports = function({genId = nanoid, ...wsConfig} = {})
 {
-  const wss = new Server({...config, noServer: true, port: null, server: null});
+  const wss = new Server({...wsConfig, noServer: true, port: null, server: null});
 
   // Dict to store connections
   const sockets = {};
@@ -41,7 +41,7 @@ module.exports = function(config)
 
     // No url to use as 'extension cord' id, generate one and redirect
     if(url === '/')
-      return socket.end(`HTTP/1.1 302 Found\r\nLocation: /${nanoid()}\r\n\r\n`);
+      return socket.end(`HTTP/1.1 302 Found\r\nLocation: /${genId()}\r\n\r\n`);
 
     // Url with 'extension cord' id, process it
     wss.handleUpgrade(req, socket, head, function onConnection(socket)
