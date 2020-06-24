@@ -22,7 +22,7 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
   // Dict to store connections
   const sockets = {};
 
-  // Peer connection is closed, close the other end
+  // When peer connection gets closed, close the other end too
   function onclose()
   {
     // Sockets were connected, just close them
@@ -44,7 +44,7 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
       return socket.end(`HTTP/1.1 302 Found\r\nLocation: /${genId()}\r\n\r\n`);
 
     // Url with 'extension cord' id, process it
-    wss.handleUpgrade(req, socket, head, function onConnection(socket)
+    wss.handleUpgrade(req, socket, head, function(socket)
     {
       // Look if there was a websocket waiting with this url
       const soc = sockets[url];
@@ -68,7 +68,7 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
       else
         sockets[url] = socket;
 
-      // Peer connection is closed, close the other end
+      // When peer connection gets closed, close the other end too
       socket.onclose = onclose;
     });
   }
