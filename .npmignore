@@ -1,0 +1,5 @@
+.settings/
+.project
+__tests__/
+coverage/
+*.tgz
