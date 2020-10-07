@@ -3,8 +3,8 @@
   "version": "1.1.0",
   "description": "WebSockets extension cord",
   "dependencies": {
-    "nanoid": "^3.1.10",
-    "ws": "7.3.0"
+    "nanoid": "^3.1.12",
+    "ws": "7.3.1"
   },
   "main": "index.js",
   "bin": "server.js",
@@ -19,8 +19,8 @@
   },
   "homepage": "https://github.com/piranna/Schuko#readme",
   "devDependencies": {
-    "jest-cli": "^26.1.0",
-    "prettier": "^2.0.5"
+    "jest-cli": "^26.5.2",
+    "prettier": "^2.1.2"
   },
   "scripts": {
     "test": "jest"
