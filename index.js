@@ -57,8 +57,8 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
         soc.peer = socket;
 
         // Forward raw message to the other peer
-        socket.onmessage = onmessage_relay;
-        soc.onmessage = onmessage_relay;
+        socket.addEventListener('message', onmessage_relay)
+        soc.addEventListener('message', onmessage_relay)
 
         // Unset waiting socket (and free the connection url)
         delete sockets[url];
@@ -69,7 +69,7 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
         sockets[url] = socket;
 
       // When peer connection gets closed, close the other end too
-      socket.onclose = onclose;
+      socket.addEventListener('close', onclose)
     });
   }
 }
