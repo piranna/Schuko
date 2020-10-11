@@ -40,7 +40,20 @@ test("redirect when no id", function () {
 
 describe('id', function()
 {
+  let port
   let server
+
+  beforeEach(function(done)
+  {
+    server = createServer()
+    .once('error', done)
+    .on('upgrade', schuko())
+    .listen(function() {
+      ({port} = server.address())
+
+      done()
+    })
+  })
 
   afterEach(function(done)
   {
@@ -51,58 +64,41 @@ describe('id', function()
   })
 
   test("close when not connected", function (done) {
-    server = createServer()
-    .once('error', done)
-    .on('upgrade', schuko())
-    .listen(function() {
-      const {port} = server.address()
+    const ws1 = new WebSocket(`ws:localhost:${port}/id`)
 
-      const ws1 = new WebSocket(`ws:localhost:${port}/id`)
+    ws1.addEventListener('open', function()
+    {
+      this.close()
+    })
 
-      ws1.addEventListener('open', function()
-      {
-        ws1.close()
-      })
+    ws1.addEventListener('close', function({code})
+    {
+      expect(code).toBe(1005)
 
-      ws1.addEventListener('close', function({code})
-      {
-        expect(code).toBe(1005)
-
-        done()
-      })
+      done()
     })
   });
 
   test("full connection", function (done) {
-    server = createServer()
-    .once('error', done)
-    .on('upgrade', schuko())
-    .listen(function() {
-      const {port} = server.address()
+    const ws1 = new WebSocket(`ws:localhost:${port}/id`)
+    const ws2 = new WebSocket(`ws:localhost:${port}/id`)
 
-      const ws1 = new WebSocket(`ws:localhost:${port}/id`)
-      const ws2 = new WebSocket(`ws:localhost:${port}/id`)
+    const expected = 'asdf'
 
-      const expected = 'asdf'
+    ws1.addEventListener('open', ws1.send.bind(ws1, expected))
 
-      ws1.addEventListener('open', function()
-      {
-        this.send(expected)
-      })
+    ws2.addEventListener('message', function({data})
+    {
+      expect(data).toBe(expected)
 
-      ws2.addEventListener('message', function({data})
-      {
-        expect(data).toBe(expected)
+      ws1.close()
+    })
 
-        ws1.close()
-      })
+    ws2.addEventListener('close', function({code})
+    {
+      expect(code).toBe(1005)
 
-      ws2.addEventListener('close', function({code})
-      {
-        expect(code).toBe(1005)
-
-        done()
-      })
+      done()
     })
   });
 })
