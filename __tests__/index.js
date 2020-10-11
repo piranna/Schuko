@@ -101,4 +101,31 @@ describe('id', function()
       done()
     })
   });
+
+  test("buffer data if send before second socket gets open", function (done) {
+    const ws1 = new WebSocket(`ws:localhost:${port}/id`)
+
+    const expected = 'asdf'
+
+    ws1.addEventListener('open', ws1.send.bind(ws1, expected))
+
+    setTimeout(function()
+    {
+      const ws2 = new WebSocket(`ws:localhost:${port}/id`)
+
+      ws2.addEventListener('message', function({data})
+      {
+        expect(data).toBe(expected)
+
+        ws1.close()
+      })
+
+      ws2.addEventListener('close', function({code})
+      {
+        expect(code).toBe(1005)
+
+        done()
+      })
+    }, 1000)
+  });
 })

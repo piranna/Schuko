@@ -8,6 +8,11 @@ const {nanoid} = require('nanoid')
 const {Server} = require('ws');
 
 
+function onmessage_buffering({data})
+{
+  this.buffer.push(data)
+}
+
 // Forward raw message to the other peer
 function onmessage_relay({data})
 {
@@ -52,6 +57,14 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
       // There was a websocket waiting for this url, interconnect them
       if(soc)
       {
+        // Pump and send buffered data
+        let data
+        while((data = soc.buffer.shift())) socket.send(data)
+
+        delete soc.buffer
+
+        soc.removeEventListener('message', onmessage_buffering)
+
         // Link peers and set onmessage event to just forward between them
         socket.peer = soc;
         soc.peer = socket;
@@ -66,7 +79,12 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
 
       // There was not a websocket waiting for this url, put it to wait itself
       else
+      {
+        socket.buffer = []
+        socket.addEventListener('message', onmessage_buffering)
+
         sockets[url] = socket;
+      }
 
       // When peer connection gets closed, close the other end too
       socket.addEventListener('close', onclose)
