@@ -8,12 +8,17 @@
 
 const { createServer } = require('http');
 
+const unifyConfig = require('unify-config')
+
 const schuko = require('.');
+
+
+const {PORT, ...config} = unifyConfig()
 
 
 createServer(function(req, res)
 {
   res.writeHead(426).end();
 })
-.on('upgrade', schuko())
-.listen(8080);
+.on('upgrade', schuko(config))
+.listen(PORT);
