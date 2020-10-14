@@ -29,11 +29,13 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
 
   return function(req, socket, head)
   {
-    // Get url of the 'extension cord'
-    const {url} = req;
+    // Use `pathname` and `search` as IDs of the 'extension cord' and peer
+    let [pathname] = req.url.split('?');
+
+    pathname = pathname.substring(1)
 
     // No url to use as 'extension cord' id, generate one and redirect
-    if(url === '/')
+    if(!pathname.length)
       return socket.end(`HTTP/1.1 302 Found\r\nLocation: /${genId()}\r\n\r\n`);
 
     // When peer connection gets closed, close the other end too
@@ -45,14 +47,14 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
 
       // Socket was not connected, remove it from sockets list
       else
-        delete sockets[url];
+        delete sockets[pathname];
     }
 
     // Url with 'extension cord' id, process it
     wss.handleUpgrade(req, socket, head, function(socket)
     {
       // Look if there was a websocket waiting with this url
-      const soc = sockets[url];
+      const soc = sockets[pathname];
 
       // There was a websocket waiting for this url, interconnect them
       if(soc)
@@ -74,7 +76,7 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
         soc.addEventListener('message', onmessage_relay)
 
         // Unset waiting socket (and free the connection url)
-        delete sockets[url];
+        delete sockets[pathname];
       }
 
       // There was not a websocket waiting for this url, put it to wait itself
@@ -83,7 +85,7 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
         socket.buffer = []
         socket.addEventListener('message', onmessage_buffering)
 
-        sockets[url] = socket;
+        sockets[pathname] = socket;
       }
 
       // When peer connection gets closed, close the other end too
