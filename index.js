@@ -43,6 +43,16 @@ function onmessage_relay({data})
   this.peer.send(data);
 };
 
+function register(socket)
+{
+  const {pathname, sockets} = this
+
+  socket.buffer = []
+  socket.addEventListener('message', onmessage_buffering)
+
+  sockets[pathname] = socket;
+}
+
 
 module.exports = function({genId = nanoid, ...wsConfig} = {})
 {
@@ -86,12 +96,7 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
 
       // There was not a websocket waiting for this url, put it to wait itself
       else
-      {
-        socket.buffer = []
-        socket.addEventListener('message', onmessage_buffering)
-
-        sockets[pathname] = socket;
-      }
+        register.call({pathname, sockets}, socket)
 
       // When peer connection gets closed, close the other end too
       socket.addEventListener('close', onclose)
