@@ -53,10 +53,15 @@ function register(socket)
 {
   const {pathname, sockets} = this
 
-  socket.buffer = []
-  socket.addEventListener('message', onmessage_buffering)
+  startBuffering(socket)
 
   sockets[pathname] = socket;
+}
+
+function startBuffering(socket)
+{
+  socket.buffer = []
+  socket.addEventListener('message', onmessage_buffering)
 }
 
 
@@ -98,11 +103,14 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
     if(soc.id !== id) return connect.call({pathname, sockets}, peer, soc)
 
     // Remove old named peer
-    peer.buffer = []
-
     peer.removeEventListener('message', onmessage_relay)
-    peer.addEventListener('message', onmessage_buffering)
 
+    startBuffering(peer)
+    replace(peer, soc)
+  }
+
+  function replace(peer, soc)
+  {
     soc.is_replacing = true
 
     // Wait until old socket gets closed, and prepend its buffered messages to
@@ -138,42 +146,28 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
       socket.pathname = pathname
       socket.id = search
 
+      // When peer connection gets closed, close the other end too
+      socket.addEventListener('close', onClose, {once: true})
+
       // Look if there was a websocket waiting with this url
       const soc = sockets[pathname];
 
       // There was not a websocket waiting for this room, put it to wait itself
       if(!soc)
-        register.call({pathname, sockets}, socket)
+        return register.call({pathname, sockets}, socket)
 
       // There was a websocket waiting for this room with same id, replace it
-      else if(search.length && soc.id === search)
+      if(search.length && soc.id === search)
       {
         register.call({pathname, sockets}, socket)
 
-        // Wait until old socket gets closed, and prepend its buffered messages
-        // to the new one before start sending them
-        soc.removeEventListener('close', onClose)
-        soc.addEventListener('close', function()
-        {
-          while(this.buffer.length) socket.buffer.unshift(this.buffer.pop())
-
-          // connect.call({pathname, sockets}, this.peer, socket)
-        }, {once: true})
-
-        soc.close()
+        return replace(soc, socket)
       }
 
       // There was a websocket waiting for this url, interconnect them
-      else
-      {
-        // Forward raw messages to the other peer
-        socket.addEventListener('message', onmessage_relay)
+      socket.addEventListener('message', onmessage_relay)
 
-        connect.call({pathname, sockets}, socket, soc)
-      }
-
-      // When peer connection gets closed, close the other end too
-      socket.addEventListener('close', onClose, {once: true})
+      connect.call({pathname, sockets}, socket, soc)
     });
   }
 }
