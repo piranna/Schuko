@@ -72,6 +72,41 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
   // Dict to store connections
   const sockets = {};
 
+  function handleUpgrade(socket, {url})
+  {
+    // Use `pathname` and `search` as IDs of the 'extension cord' and peer
+    let [pathname, ...search] = url.split('?');
+
+    pathname = pathname.substring(1)
+    search = search.join('?')
+
+    socket.id = search
+    socket.pathname = pathname
+
+    // When peer connection gets closed, close the other end too
+    socket.addEventListener('close', onClose, {once: true})
+
+    // Look if there was a websocket waiting with this url
+    const soc = sockets[pathname];
+
+    // There was not a websocket waiting for this room, put it to wait itself
+    if(!soc)
+      return register.call({pathname, sockets}, socket)
+
+    // There was a websocket waiting for this room with same id, replace it
+    if(search.length && soc.id === search)
+    {
+      register.call({pathname, sockets}, socket)
+
+      return replace(soc, socket)
+    }
+
+    // There was a websocket waiting for this url, interconnect them
+    socket.addEventListener('message', onmessage_relay)
+
+    connect.call({pathname, sockets}, socket, soc)
+  }
+
   // When peer connection gets closed, close the other end too
   function onClose()
   {
@@ -84,6 +119,7 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
       return
     }
 
+    // Disconect peer from ourselves
     delete peer.peer
 
     // Peer was annonimous, just close it
@@ -130,44 +166,11 @@ module.exports = function({genId = nanoid, ...wsConfig} = {})
 
   return function(req, socket, head)
   {
-    // Use `pathname` and `search` as IDs of the 'extension cord' and peer
-    let [pathname, ...search] = req.url.split('?');
-
-    pathname = pathname.substring(1)
-    search = search.join('?')
-
     // No url to use as 'extension cord' id, generate one and redirect
-    if(!pathname.length)
+    if(req.url.split('?')[0] === '/')
       return socket.end(`HTTP/1.1 302 Found\r\nLocation: /${genId()}\r\n\r\n`);
 
     // Url with 'extension cord' id, process it
-    wss.handleUpgrade(req, socket, head, function(socket)
-    {
-      socket.pathname = pathname
-      socket.id = search
-
-      // When peer connection gets closed, close the other end too
-      socket.addEventListener('close', onClose, {once: true})
-
-      // Look if there was a websocket waiting with this url
-      const soc = sockets[pathname];
-
-      // There was not a websocket waiting for this room, put it to wait itself
-      if(!soc)
-        return register.call({pathname, sockets}, socket)
-
-      // There was a websocket waiting for this room with same id, replace it
-      if(search.length && soc.id === search)
-      {
-        register.call({pathname, sockets}, socket)
-
-        return replace(soc, socket)
-      }
-
-      // There was a websocket waiting for this url, interconnect them
-      socket.addEventListener('message', onmessage_relay)
-
-      connect.call({pathname, sockets}, socket, soc)
-    });
+    wss.handleUpgrade(req, socket, head, handleUpgrade);
   }
 }

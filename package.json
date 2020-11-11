@@ -5,7 +5,7 @@
   "dependencies": {
     "nanoid": "^3.1.16",
     "unify-config": "^0.5.2",
-    "ws": "^7.3.1"
+    "ws": "^7.4.0"
   },
   "main": "index.js",
   "bin": {
