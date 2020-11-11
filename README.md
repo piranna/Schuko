@@ -11,7 +11,8 @@ the same path, that will be used as id. Data will be buffered if second
 WebSocket is still not connected. If no "path-id" is provided, it will generate
 one and return a `302` redirection response. After the connection is
 established, this "path-id" can be reused again if necessary to create another
-interconnection.
+interconnection. Additionally, you can identify the peers and make them to keep
+listening connections using the URL `query` string as peer ID.
 
 This server is based on code from [DataChannel-polyfill]
 (https://github.com/piranna/DataChannel-polyfill) backend server.
