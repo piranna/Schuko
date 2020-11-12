@@ -17,6 +17,8 @@ listening connections using the URL `query` string as peer ID.
 This server is based on code from [DataChannel-polyfill]
 (https://github.com/piranna/DataChannel-polyfill) backend server.
 
+You can connect to an instance of Schuko at wss://schuko.herokuapp.com/.
+
 Dependencies
 ------------
 
