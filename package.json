@@ -3,9 +3,9 @@
   "version": "1.2.1",
   "description": "WebSockets extension cord",
   "dependencies": {
-    "nanoid": "^3.1.16",
+    "nanoid": "^3.1.31",
     "unify-config": "^0.6.0",
-    "ws": "^7.4.0"
+    "ws": "^7.4.6"
   },
   "main": "index.js",
   "bin": {
