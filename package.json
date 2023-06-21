@@ -4,7 +4,7 @@
   "description": "WebSockets extension cord",
   "dependencies": {
     "nanoid": "^3.1.16",
-    "unify-config": "^0.6.0",
+    "unify-config": "^0.6.1",
     "ws": "^7.4.0"
   },
   "main": "index.js",
